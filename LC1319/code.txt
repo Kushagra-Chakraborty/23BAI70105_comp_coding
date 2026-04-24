@@ -1,0 +1,31 @@
+class Solution:
+    '''
+        minimum operations to connect all
+        check? => n == sum(vis)
+        a_conn = int
+
+    '''
+    def makeConnected(self, n: int, connections: List[List[int]]) -> int:
+        vis = [0] * n
+        adj = defaultdict(list)
+        for u,v in connections:
+            adj[u].append(v)
+            adj[v].append(u)
+        stack = []
+        systems=0
+        def dfs(node):
+            stack = [node]
+            while stack:
+                cur = stack.pop()
+                if vis[cur] != 1:
+                    for n in adj[cur]:
+                        stack.append(n)
+                        vis[cur] = 1
+                else:
+                    continue
+        for i in range(n):
+            if not vis[i]:
+                dfs(i)
+                systems+=1
+        return -1 if n - len(connections) > 1 else systems-1
+        

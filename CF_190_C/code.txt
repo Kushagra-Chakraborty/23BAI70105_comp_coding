@@ -1,0 +1,45 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+int n, idx, total;
+vector<string> words;
+string result;
+bool error = false;
+
+void solve(){
+    if(idx >= (int)words.size()){
+        error = true;
+        return;
+    }
+    string& w = words[idx++];
+    if(w == "int"){
+        result += "int";
+    } else {
+        // pair
+        result += "pair<";
+        solve();
+        if(error) return;
+        result += ',';
+        solve();
+        if(error) return;
+        result += '>';
+    }
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    cin >> n;
+    string word;
+    while(cin >> word) words.push_back(word);
+    
+    idx = 0;
+    solve();
+    
+    if(error || idx != (int)words.size()){
+        cout << "Error occurred\n";
+    } else {
+        cout << result << "\n";
+    }
+}

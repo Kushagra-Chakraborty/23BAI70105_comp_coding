@@ -1,0 +1,28 @@
+class Solution:
+    def minEatingSpeed(self, piles: List[int], h: int) -> int:
+        left = 1
+        right = max(piles)
+        ans = 0
+        while left<=right:
+            mid = (left+right)//2
+            if self.valid_time(mid,piles,h):
+                ans = mid
+                right = mid-1
+            else:
+                left = mid+1
+        return ans
+
+    def valid_time(self,mid,piles,h):
+        tot = 0
+        for i in range(len(piles)):
+            if mid>piles[i]:
+                tot+=1
+            else:
+                tot+=math.ceil(piles[i]/mid)
+        if tot <= h:
+            return True
+        return False
+
+
+
+        

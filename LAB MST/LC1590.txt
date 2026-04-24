@@ -1,0 +1,20 @@
+class Solution:
+    def minSubarray(self, nums: List[int], p: int) -> int:
+        n = len(nums)
+        tot = sum(nums)
+        rem = tot % p
+        if rem == 0:
+            return 0
+        pref = 0
+        ans = n
+        m = {0:-1}
+        for i in range(n):
+            pref = (pref + nums[i])%p
+            check = (pref - rem)%p
+            if check in m:
+                ans = min(ans,i - m[check])
+            m[pref] = i
+        if ans<n:
+            return ans
+        else: 
+            return -1
