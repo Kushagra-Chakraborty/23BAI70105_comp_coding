@@ -1,0 +1,92 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+const int MAXN = 100005;
+// For a persistent segment tree, we need O(N log N) nodes. 
+// 40 is a safe multiplier for depth.
+const int MAX_NODES = MAXN * 40; 
+
+int lc[MAX_NODES], rc[MAX_NODES], sum_nodes[MAX_NODES];
+int root[MAXN];
+int node_cnt = 0;
+
+// Standard persistent segment tree point-update
+int update(int prev_root, int l, int r, int val) {
+    int u = ++node_cnt;
+    lc[u] = lc[prev_root];
+    rc[u] = rc[prev_root];
+    sum_nodes[u] = sum_nodes[prev_root] + 1;
+
+    if (l == r) return u;
+
+    int mid = l + (r - l) / 2;
+    if (val <= mid) {
+        lc[u] = update(lc[prev_root], l, mid, val);
+    } else {
+        rc[u] = update(rc[prev_root], mid + 1, r, val);
+    }
+    return u;
+}
+
+// Query the count of values in the range [ql, qr]
+int query(int u, int l, int r, int ql, int qr) {
+    if (!u || ql > r || qr < l) return 0;
+    if (ql <= l && r <= qr) return sum_nodes[u];
+    
+    int mid = l + (r - l) / 2;
+    return query(lc[u], l, mid, ql, qr) + query(rc[u], mid + 1, r, ql, qr);
+}
+
+int main() {
+    // Fast I/O is mandatory for heavy queries
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n, k;
+    if (!(cin >> n >> k)) return 0;
+
+    vector<int> a(n + 1);
+    vector<vector<int>> pos(100005); // Tracks the indices where each value appears
+    
+    root[0] = 0; // The empty base state
+
+    for (int i = 1; i <= n; ++i) {
+        cin >> a[i];
+        pos[a[i]].push_back(i);
+
+        int prev_k = 0;
+        if (pos[a[i]].size() > k) {
+            // Locate the index that pushes this element type over the limit
+            prev_k = pos[a[i]][pos[a[i]].size() - k - 1];
+        }
+
+        // Add this prev_k value to our timeline at version 'i'
+        root[i] = update(root[i - 1], 0, n, prev_k);
+    }
+
+    int q;
+    cin >> q;
+    int last = 0;
+
+    while (q--) {
+        int x, y;
+        cin >> x >> y;
+        
+        // Decode the online query bounds
+        int l = ((x + last) % n) + 1;
+        int r = ((y + last) % n) + 1;
+        
+        if (l > r) swap(l, r);
+
+        // Query root[r] for elements with prev_k <= l - 1
+        // Subtract (l - 1) to remove the elements that fall completely outside our [l, r] window
+        last = query(root[r], 0, n, 0, l - 1) - (l - 1);
+        
+        cout << last << "\n";
+    }
+
+    return 0;
+}

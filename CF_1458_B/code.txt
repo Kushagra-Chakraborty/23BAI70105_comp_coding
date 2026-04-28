@@ -1,0 +1,57 @@
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <iomanip>
+#include <algorithm>
+
+using namespace std;
+
+int main() {
+    // Optimize standard I/O operations for speed
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    if (!(cin >> n)) return 0;
+
+    vector<int> a(n), b(n);
+    int sum_b = 0;
+    for (int i = 0; i < n; ++i) {
+        cin >> a[i] >> b[i];
+        sum_b += b[i];
+    }
+
+    int max_capacity = n * 100;
+    
+    // dp[k][v] initialized to -1 (unreachable)
+    vector<vector<int>> dp(n + 1, vector<int>(max_capacity + 1, -1));
+    dp[0][0] = 0;
+
+    // Process each glass
+    for (int i = 0; i < n; ++i) {
+        // Iterate backwards to simulate 0/1 knapsack behavior
+        for (int j = i + 1; j >= 1; --j) {
+            for (int v = max_capacity; v >= a[i]; --v) {
+                if (dp[j - 1][v - a[i]] != -1) {
+                    dp[j][v] = max(dp[j][v], dp[j - 1][v - a[i]] + b[i]);
+                }
+            }
+        }
+    }
+
+    // Extract the answer for each k
+    for (int k = 1; k <= n; ++k) {
+        double max_water = 0;
+        for (int v = 0; v <= max_capacity; ++v) {
+            if (dp[k][v] != -1) {
+                // Apply our core mathematical observation
+                double current_water = min((double)v, (sum_b + dp[k][v]) / 2.0);
+                max_water = max(max_water, current_water);
+            }
+        }
+        cout << fixed << setprecision(10) << max_water << (k == n ? "" : " ");
+    }
+    cout << "\n";
+
+    return 0;
+}

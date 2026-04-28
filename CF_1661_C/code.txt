@@ -1,0 +1,76 @@
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <algorithm>
+
+using namespace std;
+
+// Validator function: Can we reach target_height in exactly 'days' days?
+bool check(long long days, long long target_height, const vector<long long>& h) {
+    long long odd_days = (days + 1) / 2;
+    long long even_days = days / 2;
+    
+    long long required_odd = 0;
+    long long total_sum = 0;
+    
+    for (long long height : h) {
+        long long diff = target_height - height;
+        total_sum += diff;
+        if (diff % 2 != 0) {
+            required_odd++;
+        }
+    }
+    
+    // Condition 1: We have enough odd days to cover mandatory odd differences
+    // Condition 2: We have enough total volume capacity
+    return (required_odd <= odd_days) && (total_sum <= odd_days + even_days * 2);
+}
+
+// Binary search to find the minimum days for a specific target height
+long long get_min_days_for_target(long long target_height, const vector<long long>& h) {
+    long long left = 0, right = 1e18;
+    long long ans = right;
+    
+    while (left <= right) {
+        long long mid = left + (right - left) / 2;
+        if (check(mid, target_height, h)) {
+            ans = mid;
+            right = mid - 1; // Try to find a smaller valid number of days
+        } else {
+            left = mid + 1;  // Not enough days, need more
+        }
+    }
+    return ans;
+}
+
+void solve() {
+    int n;
+    cin >> n;
+    vector<long long> h(n);
+    long long max_h = 0;
+    
+    for (int i = 0; i < n; ++i) {
+        cin >> h[i];
+        max_h = max(max_h, h[i]);
+    }
+    
+    // The optimal target is either the current max, or max + 1.
+    long long ans1 = get_min_days_for_target(max_h, h);
+    long long ans2 = get_min_days_for_target(max_h + 1, h);
+    
+    cout << min(ans1, ans2) << "\n";
+}
+
+int main() {
+    // Fast I/O
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    int t;
+    if (cin >> t) {
+        while (t--) {
+            solve();
+        }
+    }
+    return 0;
+}
